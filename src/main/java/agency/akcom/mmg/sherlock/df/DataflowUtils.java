@@ -89,11 +89,11 @@ public class DataflowUtils {
 			setupPubsubTopic(pubsubOptions.getPubsubTopic());
 			pendingMessages.add("The Pub/Sub topic has been set up: " + pubsubOptions.getPubsubTopic());
 
-			if (!pubsubOptions.getPubsubSubscription().isEmpty()) {
-				setupPubsubSubscription(pubsubOptions.getPubsubTopic(), pubsubOptions.getPubsubSubscription());
-				pendingMessages
-						.add("The Pub/Sub subscription has been set up: " + pubsubOptions.getPubsubSubscription());
-			}
+//			if (!pubsubOptions.getPubsubSubscription().isEmpty()) {
+//				setupPubsubSubscription(pubsubOptions.getPubsubTopic(), pubsubOptions.getPubsubSubscription());
+//				pendingMessages
+//						.add("The Pub/Sub subscription has been set up: " + pubsubOptions.getPubsubSubscription());
+//			}
 		}
 	}
 

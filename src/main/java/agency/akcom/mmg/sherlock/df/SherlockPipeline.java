@@ -3,6 +3,7 @@ package agency.akcom.mmg.sherlock.df;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 import org.json.JSONException;
@@ -10,6 +11,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.api.services.bigquery.model.TableCell;
 import com.google.api.services.bigquery.model.TableFieldSchema;
 import com.google.api.services.bigquery.model.TableRow;
 import com.google.api.services.bigquery.model.TableSchema;
@@ -44,28 +46,28 @@ public class SherlockPipeline {
 				{"trackingId","STRING","tid",""}	,
 				{"date","STRING","","ga:date"}	,
 				
-//				{"traffic","RECORD","",""}	,
-//				{"traffic.referralPath","STRING","",""}	,
-//				{"traffic.campaign","STRING","",""}	,
-//				{"traffic.source","STRING","",""}	,
-//				{"traffic.medium","STRING","",""}	,
-//				{"traffic.keyword","STRING","",""}	,
-//				{"traffic.adContent","STRING","",""}	,
-//				{"traffic.campaignId","STRING","",""}	,
-//				{"traffic.gclid","STRING","",""}	,
-//				{"traffic.dclid","STRING","",""}	,
+				{"traffic","RECORD","",""}	,
+				{"traffic.referralPath","STRING","dr","ga:referralPath"}	,
+				{"traffic.campaign","STRING","","ga:campaign"}	,
+				{"traffic.source","STRING","","ga:source"}	,
+				{"traffic.medium","STRING","","ga:medium"}	,
+				{"traffic.keyword","STRING","","ga:keyword"}	,
+				{"traffic.adContent","STRING","","ga:adContent"}	,
+				{"traffic.campaignId","STRING","ci",""}	,
+				{"traffic.gclid","STRING","gclid",""}	,
+				{"traffic.dclid","STRING","dclid",""}	,
 				
-//				{"device","RECORD","",""}	,
-//				{"device.ip","STRING","",""}	,
-//				{"device.userAgent","STRING","",""}	,
-//				{"device.flashVersion","STRING","",""}	,
-//				{"device.javaEnabled","BOOLEAN","",""}	,
-//				{"device.language","STRING","",""}	,
-//				{"device.screenColors","STRING","",""}	,
-//				{"device.screenResolution","STRING","",""}	,
+				{"device","RECORD","",""}	,
+				{"device.ip","STRING","uip",""}	,
+				{"device.userAgent","STRING","ua",""}	,
+				{"device.flashVersion","STRING","fl","ga:flashVersion"}	,
+				{"device.javaEnabled","BOOLEAN","je","ga:javaEnabled"}	,
+				{"device.language","STRING","","ga:language"}	,
+				{"device.screenColors","STRING","sd","ga:screenColors"}	,
+				{"device.screenResolution","STRING","sr","ga:screenResolution"}	,
 				
-//				{"geo","RECORD","",""}	,
-//				{"geo.id","STRING","",""}	,
+				{"geo","RECORD","",""}	,
+				{"geo.id","STRING","geoid",""}	,
 				
 //				{"customDimensions","RECORD","",""}	,
 //				{"customDimensions.index","INTEGER","",""}	,
@@ -78,6 +80,7 @@ public class SherlockPipeline {
 //				{"customGroups","RECORD","",""}	,
 //				{"customGroups.index","INTEGER","",""}	,
 //				{"customGroups.value","STRING","",""}	,
+				
 				{"hour","INTEGER","","ga:hour"}	,
 				{"minute","INTEGER","","ga:minute"}	,
 				{"time","INTEGER","time",""}	,
@@ -94,20 +97,21 @@ public class SherlockPipeline {
 //				{"social.socialInteractionTarget","STRING","",""}	,
 				
 				{"type","STRING","t",""}	,
+				
 //				{"page","RECORD","",""}	,
 //				{"page.pagePath","STRING","",""}	,
 //				{"page.hostname","STRING","",""}	,
 //				{"page.pageTitle","STRING","",""}	,
 				
-//				{"eCommerceAction","RECORD","",""}	,
-//				{"eCommerceAction.action_type","STRING","",""}	,
-//				{"eCommerceAction.option","STRING","",""}	,
-//				{"eCommerceAction.step","INTEGER","",""}	,
-//				{"eCommerceAction.list","STRING","",""}	,
+				{"eCommerceAction","RECORD","",""}	,
+				{"eCommerceAction.action_type","STRING","pa",""}	,
+				{"eCommerceAction.option","STRING","col",""}	,
+				{"eCommerceAction.step","INTEGER","cos",""}	,
+				{"eCommerceAction.list","STRING","pal",""}	,
 				
-//				{"experiment","RECORD","",""}	,
-//				{"experiment.experimentId","STRING","",""}	,
-//				{"experiment.experimentVariant","STRING","",""}	,
+				{"experiment","RECORD","",""}	,
+				{"experiment.experimentId","STRING","xid",""}	,
+				{"experiment.experimentVariant","STRING","xvar",""}	,
 				
 //				{"product","RECORD","",""}	,
 //				{"product.isImpression","BOOLEAN","",""}	,
@@ -184,41 +188,125 @@ public class SherlockPipeline {
 	static class StringToRowConverter extends DoFn<String, TableRow> {
 
 		@Override
-		public void processElement(ProcessContext c) {
-			LOG.info("StringToRowConverter: " + c.element());			
-			JSONObject elementJSON = new JSONObject(c.element());
-			
+		public void processElement(ProcessContext c) throws IOException {
 			// This document lists all of the parameters for the Measurement Protocol.
 			// https://developers.google.com/analytics/devguides/collection/protocol/v1/parameters
-			TableRow tableRow = new TableRow();
-			for (String[] fieldSchema : SCHEMA_WITH_PARAMS) {
-				String key = fieldSchema[2];
-				if (!key.isEmpty()) {
-					try {
-						tableRow.set(fieldSchema[0], elementJSON.get(key));
-					} catch (JSONException e) {
-						LOG.warn(e.getMessage());
-					}
-				}
-			}
+
 			
-			tableRow.set("tmp_raw_request_json", c.element());
+			JSONObject elementJSON = new JSONObject(c.element());
+			TableRow tableRow = new TableRow();
+//			tableRow.setF(new ArrayList<TableCell>() {
+//				private String[] tmpSchemaRow;
+//
+//				{
+//					addAll(getTableCells(SCHEMA_WITH_PARAMS.iterator(), null));
+//					add(new TableCell().set("tmp_raw_request_json", c.element()));
+//				}
+//
+//				private List<TableCell> getTableCells(Iterator<String[]> schemaIterator, String recordName) {
+//					List<TableCell> tableCells = new ArrayList<TableCell>();
+//					String[] schemaRow;
+//					while (schemaIterator.hasNext()) {
+//						if (tmpSchemaRow != null) {
+//							schemaRow = tmpSchemaRow;
+//							tmpSchemaRow = null;
+//						} else {
+//							schemaRow = schemaIterator.next();
+//							if (recordName != null) {
+//								if (schemaRow[0].startsWith(recordName + ".")) {
+//									schemaRow[0] = schemaRow[0].replaceFirst(recordName + ".", "");
+//								} else {
+//									tmpSchemaRow = schemaRow;
+//									return tableCells;
+//								}
+//							}
+//						}
+//						
+//						TableCell cell = getNextTableCell(schemaIterator, schemaRow);
+//						LOG.info(cell.toString());						
+//						tableCells.add(cell);
+//					}
+//
+//					return tableCells;
+//				}
+//
+//				private TableCell getNextTableCell(Iterator<String[]> schemaIterator, String[] schemaRow) {
+//					LOG.info(String.join(",", schemaRow));
+//					
+//					if ("RECORD".equals(schemaRow[1])) {
+//						return new TableCell().set(schemaRow[0], getTableCells(schemaIterator, schemaRow[0]));
+//					} else {
+//						String key = schemaRow[2];
+//						Object value = null;
+//						if (!key.isEmpty()) {
+//							try {
+//								value = elementJSON.get(key);
+//							} catch (JSONException e) {
+//								LOG.warn(e.getMessage());
+//							}
+//						}
+//						return new TableCell().set(schemaRow[0], value);
+//					}
+//				}
+//			});
+			List<TableCell> cells = new ArrayList<TableCell>();
+			TableCell cell = new TableCell();
+			cell.set("hitId", "test");
+			cells.add(cell);
+			tableRow.setF(cells);
+			
+			LOG.info(tableRow.toString());
 			
 			c.output(tableRow);
-
 		}
 
+
+
 		static TableSchema getSchema() {
+
 			return new TableSchema().setFields(new ArrayList<TableFieldSchema>() {
+				private String[] tmpSchemaRow;
+
 				// Compose the list of TableFieldSchema from tableSchema.
 				{
 					// https://support.owox.com/hc/en-us/articles/217490677-Streaming-schema-for-hits
-					for (String[] fieldSchema : SCHEMA_WITH_PARAMS) {
-						add(new TableFieldSchema().setName(fieldSchema[0]).setType(fieldSchema[1]));
-					}
-
+					addAll(getFieldShemas(SCHEMA_WITH_PARAMS.iterator(), null));
 					add(new TableFieldSchema().setName("tmp_raw_request_json").setType("STRING"));
 				}
+
+				private List<TableFieldSchema> getFieldShemas(Iterator<String[]> schemaIterator,
+						String recordName) {
+					List<TableFieldSchema> fieldShemas = new ArrayList<TableFieldSchema>();
+					String[] schemaRow;
+					while (schemaIterator.hasNext()) {
+						if (tmpSchemaRow != null) {
+							schemaRow = tmpSchemaRow;
+							tmpSchemaRow = null;
+						} else {
+							schemaRow = schemaIterator.next();
+							if (recordName != null) {
+								if (schemaRow[0].startsWith(recordName + ".")) {
+									schemaRow[0] = schemaRow[0].replaceFirst(recordName + ".", "");
+								} else {
+									tmpSchemaRow = schemaRow;
+									return fieldShemas;
+								}
+							}
+						}
+						fieldShemas.add(getNextFieldShema(schemaIterator, schemaRow));
+					}
+					return fieldShemas;
+				}
+
+				private TableFieldSchema getNextFieldShema(Iterator<String[]> schemaIterator, String[] schemaRow) {
+					if ("RECORD".equals(schemaRow[1])) {
+						return new TableFieldSchema().setName(schemaRow[0]).setType(schemaRow[1])
+								.setFields(getFieldShemas(schemaIterator, schemaRow[0]));
+					} else {
+						return new TableFieldSchema().setName(schemaRow[0]).setType(schemaRow[1]);
+					}
+				}
+
 			});
 		}
 	}
@@ -238,7 +326,7 @@ public class SherlockPipeline {
 		// In order to cancel the pipelines automatically,
 		// {@literal DataflowPipelineRunner} is forced to be used.
 		// options.setRunner(DataflowPipelineRunner.class);
-		options.setBigQuerySchema(StringToRowConverter.getSchema());
+		options.setBigQuerySchema(StringToRowConverter.getSchema()); 
 		options.setWorkerMachineType("n1-standard-1");
 
 		DataflowUtils dataflowUtils = new DataflowUtils(options);
