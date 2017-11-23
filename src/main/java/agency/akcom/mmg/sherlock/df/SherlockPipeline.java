@@ -11,7 +11,6 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.api.services.bigquery.model.TableCell;
 import com.google.api.services.bigquery.model.TableFieldSchema;
 import com.google.api.services.bigquery.model.TableRow;
 import com.google.api.services.bigquery.model.TableSchema;
@@ -61,7 +60,7 @@ public class SherlockPipeline {
 				{"device.ip","STRING","uip",""}	,
 				{"device.userAgent","STRING","ua",""}	,
 				{"device.flashVersion","STRING","fl","ga:flashVersion"}	,
-				{"device.javaEnabled","BOOLEAN","je","ga:javaEnabled"}	,
+//				{"device.javaEnabled","BOOLEAN","je","ga:javaEnabled"}	, //TODO need to implement converting to boolean
 				{"device.language","STRING","","ga:language"}	,
 				{"device.screenColors","STRING","sd","ga:screenColors"}	,
 				{"device.screenResolution","STRING","sr","ga:screenResolution"}	,
@@ -86,7 +85,7 @@ public class SherlockPipeline {
 				{"time","INTEGER","time",""}	,
 				{"queueTime","INTEGER","qt",""}	,
 				{"isSecure","BOOLEAN","",""}	,
-				{"isInteraction","BOOLEAN","ni",""}	,
+//				{"isInteraction","BOOLEAN","ni",""}	, //TODO need to implement converting to boolean
 				{"currency","STRING","","ga:currencyCode"}	,
 				{"referer","STRING","","ga:fullReferrer"}	,
 				{"dataSource","STRING","","ga:dataSource"}	,
@@ -186,84 +185,70 @@ public class SherlockPipeline {
 	 * Converts strings into BigQuery rows.
 	 */
 	static class StringToRowConverter extends DoFn<String, TableRow> {
+		private String[] tmpSchemaRow;
+		JSONObject elementJSON;
 
 		@Override
 		public void processElement(ProcessContext c) throws IOException {
 			// This document lists all of the parameters for the Measurement Protocol.
 			// https://developers.google.com/analytics/devguides/collection/protocol/v1/parameters
 
-			
-			JSONObject elementJSON = new JSONObject(c.element());
+			elementJSON = new JSONObject(c.element());
 			TableRow tableRow = new TableRow();
-//			tableRow.setF(new ArrayList<TableCell>() {
-//				private String[] tmpSchemaRow;
-//
-//				{
-//					addAll(getTableCells(SCHEMA_WITH_PARAMS.iterator(), null));
-//					add(new TableCell().set("tmp_raw_request_json", c.element()));
-//				}
-//
-//				private List<TableCell> getTableCells(Iterator<String[]> schemaIterator, String recordName) {
-//					List<TableCell> tableCells = new ArrayList<TableCell>();
-//					String[] schemaRow;
-//					while (schemaIterator.hasNext()) {
-//						if (tmpSchemaRow != null) {
-//							schemaRow = tmpSchemaRow;
-//							tmpSchemaRow = null;
-//						} else {
-//							schemaRow = schemaIterator.next();
-//							if (recordName != null) {
-//								if (schemaRow[0].startsWith(recordName + ".")) {
-//									schemaRow[0] = schemaRow[0].replaceFirst(recordName + ".", "");
-//								} else {
-//									tmpSchemaRow = schemaRow;
-//									return tableCells;
-//								}
-//							}
-//						}
-//						
-//						TableCell cell = getNextTableCell(schemaIterator, schemaRow);
-//						LOG.info(cell.toString());						
-//						tableCells.add(cell);
-//					}
-//
-//					return tableCells;
-//				}
-//
-//				private TableCell getNextTableCell(Iterator<String[]> schemaIterator, String[] schemaRow) {
-//					LOG.info(String.join(",", schemaRow));
-//					
-//					if ("RECORD".equals(schemaRow[1])) {
-//						return new TableCell().set(schemaRow[0], getTableCells(schemaIterator, schemaRow[0]));
-//					} else {
-//						String key = schemaRow[2];
-//						Object value = null;
-//						if (!key.isEmpty()) {
-//							try {
-//								value = elementJSON.get(key);
-//							} catch (JSONException e) {
-//								LOG.warn(e.getMessage());
-//							}
-//						}
-//						return new TableCell().set(schemaRow[0], value);
-//					}
-//				}
-//			});
-			List<TableCell> cells = new ArrayList<TableCell>();
-			TableCell cell = new TableCell();
-			cell.set("hitId", "test");
-			cells.add(cell);
-			tableRow.setF(cells);
-			
+
+			tableRow = setFields(SCHEMA_WITH_PARAMS.iterator(), null, tableRow);
+			tableRow.set("tmp_raw_request_json", c.element());
+
 			LOG.info(tableRow.toString());
-			
+
 			c.output(tableRow);
 		}
 
+		private TableRow setFields(Iterator<String[]> schemaIterator, String recordName, TableRow tableRow) {
 
+			String[] schemaRow;
+			while (schemaIterator.hasNext()) {
+				if (tmpSchemaRow != null) {
+					schemaRow = tmpSchemaRow;
+					tmpSchemaRow = null;
+				} else {
+					schemaRow = schemaIterator.next();
+					if (recordName != null) {
+						if (schemaRow[0].startsWith(recordName + ".")) {
+							schemaRow[0] = schemaRow[0].replaceFirst(recordName + ".", "");
+						} else {
+							tmpSchemaRow = schemaRow;
+							return tableRow;
+						}
+					}
+				}
+				tableRow.set(schemaRow[0], getNextFieldValue(schemaIterator, schemaRow));
+				LOG.info(tableRow.toString());
+			}
+
+			return tableRow;
+		}
+
+		private Object getNextFieldValue(Iterator<String[]> schemaIterator, String[] schemaRow) {
+			LOG.info(String.join(",", schemaRow));
+
+			if ("RECORD".equals(schemaRow[1])) {
+				return setFields(schemaIterator, schemaRow[0], new TableRow());
+			} else {
+				String key = schemaRow[2];
+				Object value = null;
+				if (!key.isEmpty()) {
+					try {
+						value = elementJSON.get(key);
+					} catch (JSONException e) {
+						LOG.warn(e.getMessage());
+					}
+				}
+				return value;
+			}
+		}
 
 		static TableSchema getSchema() {
-
 			return new TableSchema().setFields(new ArrayList<TableFieldSchema>() {
 				private String[] tmpSchemaRow;
 
@@ -274,8 +259,7 @@ public class SherlockPipeline {
 					add(new TableFieldSchema().setName("tmp_raw_request_json").setType("STRING"));
 				}
 
-				private List<TableFieldSchema> getFieldShemas(Iterator<String[]> schemaIterator,
-						String recordName) {
+				private List<TableFieldSchema> getFieldShemas(Iterator<String[]> schemaIterator, String recordName) {
 					List<TableFieldSchema> fieldShemas = new ArrayList<TableFieldSchema>();
 					String[] schemaRow;
 					while (schemaIterator.hasNext()) {
@@ -306,7 +290,6 @@ public class SherlockPipeline {
 						return new TableFieldSchema().setName(schemaRow[0]).setType(schemaRow[1]);
 					}
 				}
-
 			});
 		}
 	}
