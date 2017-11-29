@@ -34,218 +34,20 @@ import agency.akcom.mmg.sherlock.df.options.PubsubTopicOptions;
 public class SherlockPipeline {
 	private static final Logger LOG = LoggerFactory.getLogger(SherlockPipeline.class);
 	
-	private static final List<String[]> SCHEMA_WITH_PARAMS = Arrays
-			.asList(new String[][] { 
-				{"hitId","STRING","hitId",""}	,
-				{"userId","STRING","uid",""}	,
-				{"userPhone","STRING","tel",""}	,
-				{"userEmail","STRING","email",""}	,
-//				{"userOwoxId","STRING","",""}	,
-				{"clientId","STRING","","cid"}	,
-				{"trackingId","STRING","tid",""}	,
-				{"date","STRING","","ga:date"}	,
-				
-				{"traffic","RECORD","",""}	,
-				{"traffic.referralPath","STRING","dr","ga:referralPath"}	,
-				{"traffic.campaign","STRING","","ga:campaign"}	,
-				{"traffic.source","STRING","","ga:source"}	,
-				{"traffic.medium","STRING","","ga:medium"}	,
-				{"traffic.keyword","STRING","","ga:keyword"}	,
-				{"traffic.adContent","STRING","","ga:adContent"}	,
-				{"traffic.campaignId","STRING","ci",""}	,
-				{"traffic.gclid","STRING","gclid",""}	,
-				{"traffic.dclid","STRING","dclid",""}	,
-				
-				{"device","RECORD","",""}	,
-				{"device.ip","STRING","uip",""}	,
-				{"device.userAgent","STRING","ua",""}	,
-				{"device.flashVersion","STRING","fl","ga:flashVersion"}	,
-//				{"device.javaEnabled","BOOLEAN","je","ga:javaEnabled"}	, //TODO need to implement converting to boolean
-				{"device.language","STRING","","ga:language"}	,
-				{"device.screenColors","STRING","sd","ga:screenColors"}	,
-				{"device.screenResolution","STRING","sr","ga:screenResolution"}	,
-				
-				{"geo","RECORD","",""}	,
-				{"geo.id","STRING","geoid",""}	,
-				
-//				{"customDimensions","RECORD","",""}	,
-//				{"customDimensions.index","INTEGER","",""}	,
-//				{"customDimensions.value","STRING","",""}	,
-				
-//				{"customMetrics","RECORD","",""}	,
-//				{"customMetrics.index","INTEGER","",""}	,
-//				{"customMetrics.value","FLOAT","",""}	,
-				
-//				{"customGroups","RECORD","",""}	,
-//				{"customGroups.index","INTEGER","",""}	,
-//				{"customGroups.value","STRING","",""}	,
-				
-				{"hour","INTEGER","","ga:hour"}	,
-				{"minute","INTEGER","","ga:minute"}	,
-				{"time","INTEGER","time",""}	,
-				{"queueTime","INTEGER","qt",""}	,
-				{"isSecure","BOOLEAN","",""}	,
-//				{"isInteraction","BOOLEAN","ni",""}	, //TODO need to implement converting to boolean
-				{"currency","STRING","","ga:currencyCode"}	,
-				{"referer","STRING","","ga:fullReferrer"}	,
-				{"dataSource","STRING","","ga:dataSource"}	,
-				
-//				{"social","RECORD","",""}	,
-//				{"social.socialInteractionAction","STRING","",""}	,
-//				{"social.socialInteractionNetwork","STRING","",""}	,
-//				{"social.socialInteractionTarget","STRING","",""}	,
-				
-				{"type","STRING","t",""}	,
-				
-//				{"page","RECORD","",""}	,
-//				{"page.pagePath","STRING","",""}	,
-//				{"page.hostname","STRING","",""}	,
-//				{"page.pageTitle","STRING","",""}	,
-				
-				{"eCommerceAction","RECORD","",""}	,
-				{"eCommerceAction.action_type","STRING","pa",""}	,
-				{"eCommerceAction.option","STRING","col",""}	,
-				{"eCommerceAction.step","INTEGER","cos",""}	,
-				{"eCommerceAction.list","STRING","pal",""}	,
-				
-				{"experiment","RECORD","",""}	,
-				{"experiment.experimentId","STRING","xid",""}	,
-				{"experiment.experimentVariant","STRING","xvar",""}	,
-				
-//				{"product","RECORD","",""}	,
-//				{"product.isImpression","BOOLEAN","",""}	,
-//				{"product.impressionList","STRING","",""}	,
-//				{"product.productBrand","STRING","",""}	,
-//				{"product.productPrice","FLOAT","",""}	,
-//				{"product.productQuantity","INTEGER","",""}	,
-//				{"product.productSku","STRING","",""}	,
-//				{"product.productVariant","STRING","",""}	,
-//				{"product.productCategory","STRING","",""}	,
-//				{"product.productName","STRING","",""}	,
-//				{"product.position","INTEGER","",""}	,
-//				{"product.coupon","STRING","",""}	,
-//				{"product.customDimensions","RECORD","",""}	,
-//				{"product.customDimensions.index","INTEGER","",""}	,
-//				{"product.customDimensions.value","STRING","",""}	,
-//				{"product.customMetrics","RECORD","",""}	,
-//				{"product.customMetrics.index","INTEGER","",""}	,
-//				{"product.customMetrics.value","STRING","",""}	,
-				
-//				{"promotion","RECORD","",""}	,
-//				{"promotion.promoCreative","STRING","",""}	,
-//				{"promotion.promoId","STRING","",""}	,
-//				{"promotion.promoName","STRING","",""}	,
-//				{"promotion.promoPosition","STRING","",""}	,
-				
-				{"promotionActionInfo","STRING","promoa",""}	,
-				
-//				{"transaction","RECORD","",""}	,
-//				{"transaction.transactionId","STRING","",""}	,
-//				{"transaction.transactionRevenue","FLOAT","",""}	,
-//				{"transaction.transactionTax","FLOAT","",""}	,
-//				{"transaction.transactionShipping","FLOAT","",""}	,
-//				{"transaction.transactionCoupon","STRING","",""}	,
-//				{"transaction.affiliation","STRING","",""}	,
-				
-//				{"contentInfo","RECORD","",""}	,
-//				{"contentInfo.contentDescription","STRING","",""}	,
-				
-//				{"appInfo","RECORD","",""}	,
-//				{"appInfo.name","STRING","",""}	,
-//				{"appInfo.version","STRING","",""}	,
-//				{"appInfo.id","STRING","",""}	,
-//				{"appInfo.installerId","STRING","",""}	,
-				
-//				{"exceptionInfo","RECORD","",""}	,
-//				{"exceptionInfo.description","STRING","",""}	,
-//				{"exceptionInfo.isFatal","BOOLEAN","",""}	,
-				
-//				{"eventInfo","RECORD","",""}	,
-//				{"eventInfo.eventCategory","STRING","",""}	,
-//				{"eventInfo.eventAction","STRING","",""}	,
-//				{"eventInfo.eventLabel","STRING","",""}	,
-//				{"eventInfo.eventValue","STRING","",""}	,
-				
-//				{"timingInfo","RECORD","",""}	,
-//				{"timingInfo.timingCategory","STRING","",""}	,
-//				{"timingInfo.timingVariable","STRING","",""}	,
-//				{"timingInfo.timingLabel","STRING","",""}	,
-//				{"timingInfo.timingValue","INTEGER","",""}	,
-//				{"timingInfo.pageLoad","INTEGER","",""}	,
-//				{"timingInfo.DNS","INTEGER","",""}	,
-//				{"timingInfo.pageDownload","INTEGER","",""}	,
-//				{"timingInfo.redirectResponse","INTEGER","",""}	,
-//				{"timingInfo.TCPConnect","INTEGER","",""}	,
-//				{"timingInfo.serverResponse","INTEGER","",""}	,
-//				{"timingInfo.DOMInteractive","INTEGER","",""}	,
-//				{"timingInfo.contentLoad","INTEGER","",""}	,
-});
-
 	/**
 	 * Converts strings into BigQuery rows.
 	 */
 	static class StringToRowConverter extends DoFn<String, TableRow> {
-		private String[] tmpSchemaRow;
-		JSONObject elementJSON;
 
 		@Override
 		public void processElement(ProcessContext c) throws IOException {
 			// This document lists all of the parameters for the Measurement Protocol.
 			// https://developers.google.com/analytics/devguides/collection/protocol/v1/parameters
-
-			elementJSON = new JSONObject(c.element());
-			TableRow tableRow = new TableRow();
-
-			tableRow = setFields(SCHEMA_WITH_PARAMS.iterator(), null, tableRow);
-			tableRow.set("tmp_raw_request_json", c.element());
+			TableRow tableRow = new TableRowCreator(c.element()).getTableRow();
 
 			LOG.info(tableRow.toString());
 
 			c.output(tableRow);
-		}
-
-		private TableRow setFields(Iterator<String[]> schemaIterator, String recordName, TableRow tableRow) {
-
-			String[] schemaRow;
-			while (schemaIterator.hasNext()) {
-				if (tmpSchemaRow != null) {
-					schemaRow = tmpSchemaRow;
-					tmpSchemaRow = null;
-				} else {
-					schemaRow = schemaIterator.next();
-					if (recordName != null) {
-						if (schemaRow[0].startsWith(recordName + ".")) {
-							schemaRow[0] = schemaRow[0].replaceFirst(recordName + ".", "");
-						} else {
-							tmpSchemaRow = schemaRow;
-							return tableRow;
-						}
-					}
-				}
-				tableRow.set(schemaRow[0], getNextFieldValue(schemaIterator, schemaRow));
-				LOG.info(tableRow.toString());
-			}
-
-			return tableRow;
-		}
-
-		private Object getNextFieldValue(Iterator<String[]> schemaIterator, String[] schemaRow) {
-			LOG.info(String.join(",", schemaRow));
-
-			if ("RECORD".equals(schemaRow[1])) {
-				return setFields(schemaIterator, schemaRow[0], new TableRow());
-			} else {
-				String key = schemaRow[2];
-				Object value = null;
-				if (!key.isEmpty()) {
-					try {
-						value = elementJSON.get(key);
-					} catch (JSONException e) {
-						LOG.warn(e.getMessage());
-					}
-				}
-				return value;
-			}
 		}
 
 		static TableSchema getSchema() {
@@ -255,7 +57,7 @@ public class SherlockPipeline {
 				// Compose the list of TableFieldSchema from tableSchema.
 				{
 					// https://support.owox.com/hc/en-us/articles/217490677-Streaming-schema-for-hits
-					addAll(getFieldShemas(SCHEMA_WITH_PARAMS.iterator(), null));
+					addAll(getFieldShemas(DataflowUtils.SCHEMA_WITH_PARAMS.iterator(), null));
 					add(new TableFieldSchema().setName("tmp_raw_request_json").setType("STRING"));
 				}
 
@@ -311,6 +113,7 @@ public class SherlockPipeline {
 		// options.setRunner(DataflowPipelineRunner.class);
 		options.setBigQuerySchema(StringToRowConverter.getSchema()); 
 		options.setWorkerMachineType("n1-standard-1");
+		options.setNumWorkers(0);
 
 		DataflowUtils dataflowUtils = new DataflowUtils(options);
 		dataflowUtils.setup();
