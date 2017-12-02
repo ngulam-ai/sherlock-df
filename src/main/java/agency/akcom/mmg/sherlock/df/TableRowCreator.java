@@ -1,6 +1,8 @@
 package agency.akcom.mmg.sherlock.df;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -55,13 +57,20 @@ public class TableRowCreator {
 
 	private Object getNextFieldValue(Iterator<String[]> schemaIterator, String[] schemaRow) {
 		// LOG.info(String.join(",", schemaRow));
-
-		if ("RECORD".equals(schemaRow[1])) {
+		
+		if ("REPEATED".equals(schemaRow[2])) {
+			//TODO use stub for now since we only have one repeated "customDimensions"
+			TableRow[] reapetedTableRows = createRepeated(schemaIterator, schemaRow);
+			LOG.info("REPEATED:" + schemaRow[0] + ": " + reapetedTableRows);
+			return reapetedTableRows;
+			
+		} else if ("RECORD".equals(schemaRow[1])) {
 			TableRow tmpTableRow = setFields(schemaIterator, schemaRow[0], new TableRow());
 			LOG.info("RECORD:" + schemaRow[0] + ": " + tmpTableRow.toString());
 			return tmpTableRow;
+			
 		} else {
-			String key = schemaRow[2];
+			String key = schemaRow[3];
 			Object value = null;
 			if (!key.isEmpty()) {
 				try {
@@ -72,5 +81,24 @@ public class TableRowCreator {
 			}
 			return value;
 		}
+	}
+
+	private TableRow[] createRepeated(Iterator<String[]> schemaIterator, String[] schemaRow) {
+		List<TableRow> repeatedRows = new ArrayList<>();
+		for (int i = 1; i < 99; i++) {
+			String key = schemaRow[3] + i;
+			if (elementJSON.has(key)) {
+				Object value = elementJSON.get(key);
+				TableRow tableRow = new TableRow();
+				tableRow.set("index", i);
+				tableRow.set("value", value);
+				repeatedRows.add(tableRow);
+			} 			
+		}
+		
+		schemaIterator.next();
+		schemaIterator.next();
+		
+		return (TableRow[]) repeatedRows.toArray(new TableRow[0]);
 	}
 }

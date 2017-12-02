@@ -2,12 +2,11 @@ package agency.akcom.mmg.sherlock.df;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.joda.time.DateTimeZone;
+import org.joda.time.format.DateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,6 +20,12 @@ import com.google.cloud.dataflow.sdk.io.PubsubIO;
 import com.google.cloud.dataflow.sdk.options.PipelineOptionsFactory;
 import com.google.cloud.dataflow.sdk.transforms.DoFn;
 import com.google.cloud.dataflow.sdk.transforms.ParDo;
+import com.google.cloud.dataflow.sdk.transforms.SerializableFunction;
+import com.google.cloud.dataflow.sdk.transforms.windowing.BoundedWindow;
+import com.google.cloud.dataflow.sdk.transforms.windowing.CalendarWindows;
+import com.google.cloud.dataflow.sdk.transforms.windowing.IntervalWindow;
+import com.google.cloud.dataflow.sdk.transforms.windowing.Window;
+import com.google.cloud.dataflow.sdk.values.PCollection;
 
 import agency.akcom.mmg.sherlock.df.options.BigQueryTableOptions;
 import agency.akcom.mmg.sherlock.df.options.PubsubTopicOptions;
@@ -69,7 +74,7 @@ public class SherlockPipeline {
 							schemaRow = tmpSchemaRow;
 							tmpSchemaRow = null;
 						} else {
-							schemaRow = schemaIterator.next();
+							schemaRow = schemaIterator.next().clone();
 							if (recordName != null) {
 								if (schemaRow[0].startsWith(recordName + ".")) {
 									schemaRow[0] = schemaRow[0].replaceFirst(recordName + ".", "");
@@ -86,10 +91,10 @@ public class SherlockPipeline {
 
 				private TableFieldSchema getNextFieldShema(Iterator<String[]> schemaIterator, String[] schemaRow) {
 					if ("RECORD".equals(schemaRow[1])) {
-						return new TableFieldSchema().setName(schemaRow[0]).setType(schemaRow[1])
+						return new TableFieldSchema().setName(schemaRow[0]).setType(schemaRow[1]).setMode(schemaRow[2])
 								.setFields(getFieldShemas(schemaIterator, schemaRow[0]));
 					} else {
-						return new TableFieldSchema().setName(schemaRow[0]).setType(schemaRow[1]);
+						return new TableFieldSchema().setName(schemaRow[0]).setType(schemaRow[1]).setMode(schemaRow[2]);
 					}
 				}
 			});
@@ -120,6 +125,22 @@ public class SherlockPipeline {
 
 		String tableSpec = new StringBuilder().append(options.getProject()).append(":")
 				.append(options.getBigQueryDataset()).append(".").append(options.getBigQueryTable()).toString();
+		
+//		 PCollection<TableRow> quotes = ...
+//				 quotes.apply(Window.<TableRow>into(CalendarWindows.days(1)))
+//				       .apply(BigQueryIO.Write
+//				         .named("Write")
+//				         .withSchema()
+//				         .to(new SerializableFunction<BoundedWindow, String>() {
+//				           public String apply(BoundedWindow window) {
+//				             // The cast below is safe because CalendarWindows.days(1) produces IntervalWindows.
+//				             String dayString = DateTimeFormat.forPattern("yyyy_MM_dd")
+//				                  .withZone(DateTimeZone.UTC)
+//				                  .print(((IntervalWindow) window).start());
+//				             return "my-project:output.output_table_" + dayString;
+//				           }
+//				         }));
+		
 
 		Pipeline pipeline = Pipeline.create(options);
 
