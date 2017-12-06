@@ -85,11 +85,12 @@ public class DataflowUtils {
 				{"hour","INTEGER", "NULLABLE","","ga:hour"}	,
 				{"minute","INTEGER", "NULLABLE","","ga:minute"}	,
 				{"time","INTEGER", "NULLABLE","time",""}	,
+				
 				{"queueTime","INTEGER", "NULLABLE","qt",""}	,
 				{"isSecure","BOOLEAN", "NULLABLE","",""}	,
 				{"isInteraction","BOOLEAN", "NULLABLE","",""}	, //TODO 'ni' - need to implement converting to boolean
 				{"currency","STRING", "NULLABLE","","ga:currencyCode"}	,
-				{"referer","STRING", "NULLABLE","","ga:fullReferrer"}	,
+				{"referer","STRING", "NULLABLE","dr","ga:fullReferrer"}	,
 				{"dataSource","STRING", "NULLABLE","","ga:dataSource"}	,
 				
 				{"social","RECORD", "NULLABLE","",""}	,

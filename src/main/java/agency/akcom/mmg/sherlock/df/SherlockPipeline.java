@@ -125,28 +125,22 @@ public class SherlockPipeline {
 
 		String tableSpec = new StringBuilder().append(options.getProject()).append(":")
 				.append(options.getBigQueryDataset()).append(".").append(options.getBigQueryTable()).toString();
-		
-//		 PCollection<TableRow> quotes = ...
-//				 quotes.apply(Window.<TableRow>into(CalendarWindows.days(1)))
-//				       .apply(BigQueryIO.Write
-//				         .named("Write")
-//				         .withSchema()
-//				         .to(new SerializableFunction<BoundedWindow, String>() {
-//				           public String apply(BoundedWindow window) {
-//				             // The cast below is safe because CalendarWindows.days(1) produces IntervalWindows.
-//				             String dayString = DateTimeFormat.forPattern("yyyy_MM_dd")
-//				                  .withZone(DateTimeZone.UTC)
-//				                  .print(((IntervalWindow) window).start());
-//				             return "my-project:output.output_table_" + dayString;
-//				           }
-//				         }));
-		
 
 		Pipeline pipeline = Pipeline.create(options);
 
 		pipeline.apply(PubsubIO.Read.topic(options.getPubsubTopic())).apply(ParDo.of(new StringToRowConverter()))
-				.apply(BigQueryIO.Write.to(tableSpec).withSchema(StringToRowConverter.getSchema())
-						.withWriteDisposition(WriteDisposition.WRITE_APPEND));
+				.apply(Window.<TableRow>into(CalendarWindows.days(1)))
+				.apply(BigQueryIO.Write.withSchema(StringToRowConverter.getSchema())
+						.to(new SerializableFunction<BoundedWindow, String>() {
+							@Override
+							public String apply(BoundedWindow window) {
+								// The cast below is safe because CalendarWindows.days(1) produces
+								// IntervalWindows.
+								String dayString = DateTimeFormat.forPattern("yyyyMMdd").withZone(DateTimeZone.UTC)
+										.print(((IntervalWindow) window).start());
+								return tableSpec + "_" + dayString;
+							}
+						}).withWriteDisposition(WriteDisposition.WRITE_APPEND));
 
 		pipeline.run();
 	}
