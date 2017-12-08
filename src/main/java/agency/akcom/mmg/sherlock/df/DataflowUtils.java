@@ -45,7 +45,7 @@ public class DataflowUtils {
 //				{"userOwoxId","STRING", "NULLABLE","",""}	,
 				{"clientId","STRING", "NULLABLE","cid",""}	,
 				{"trackingId","STRING", "NULLABLE","tid",""}	,
-				{"date","STRING", "NULLABLE","","ga:date"}	,
+				{"date","STRING", "NULLABLE","date","ga:date"}	,
 				
 				{"traffic","RECORD", "NULLABLE","",""}	,
 				{"traffic.referralPath","STRING", "NULLABLE","dr","ga:referralPath"}	,
@@ -82,8 +82,8 @@ public class DataflowUtils {
 				{"customGroups.index","INTEGER", "NULLABLE","",""}	,
 				{"customGroups.value","STRING", "NULLABLE","",""}	,
 				
-				{"hour","INTEGER", "NULLABLE","","ga:hour"}	,
-				{"minute","INTEGER", "NULLABLE","","ga:minute"}	,
+				{"hour","INTEGER", "NULLABLE","hour","ga:hour"}	,
+				{"minute","INTEGER", "NULLABLE","minute","ga:minute"}	,
 				{"time","INTEGER", "NULLABLE","time",""}	,
 				
 				{"queueTime","INTEGER", "NULLABLE","qt",""}	,
