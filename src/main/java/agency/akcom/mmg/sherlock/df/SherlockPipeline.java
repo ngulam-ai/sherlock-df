@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,7 +26,6 @@ import com.google.cloud.dataflow.sdk.transforms.windowing.BoundedWindow;
 import com.google.cloud.dataflow.sdk.transforms.windowing.CalendarWindows;
 import com.google.cloud.dataflow.sdk.transforms.windowing.IntervalWindow;
 import com.google.cloud.dataflow.sdk.transforms.windowing.Window;
-import com.google.cloud.dataflow.sdk.values.PCollection;
 
 import agency.akcom.mmg.sherlock.df.options.BigQueryTableOptions;
 import agency.akcom.mmg.sherlock.df.options.PubsubTopicOptions;
@@ -38,6 +38,33 @@ import agency.akcom.mmg.sherlock.df.options.PubsubTopicOptions;
  */
 public class SherlockPipeline {
 	private static final Logger LOG = LoggerFactory.getLogger(SherlockPipeline.class);
+	
+	/**
+	 * Replace this generic label $$CUSTOM_PARAM(xxxxxxx)$$ (where xxxxx can by any value) with a null 
+	 */
+	static class JsonValuesCleaner extends DoFn<String, String> {
+		@Override
+		public void processElement(DoFn<String, String>.ProcessContext c) throws Exception {
+			JSONObject elementJSON = new JSONObject(c.element());
+
+			List<String> keysToDelete = new ArrayList<>();
+			for (String key : elementJSON.keySet()) {
+				String value = elementJSON.getString(key);
+				if (value.startsWith("$$CUSTOM_PARAM(")) { // TODO improve matching
+
+					LOG.warn(String.format("Removing key='%s' value='%s'", key, value));
+
+					keysToDelete.add(key);
+				}
+			}
+
+			for (String key : keysToDelete) {
+				elementJSON.remove(key);
+			}
+
+			c.output(elementJSON.toString());
+		}
+	}
 	
 	/**
 	 * Converts strings into BigQuery rows.
@@ -118,6 +145,7 @@ public class SherlockPipeline {
 		// options.setRunner(DataflowPipelineRunner.class);
 		options.setBigQuerySchema(StringToRowConverter.getSchema()); 
 		options.setWorkerMachineType("n1-standard-1");
+		options.setZone("europe-west3-a");
 		options.setNumWorkers(0);
 
 		DataflowUtils dataflowUtils = new DataflowUtils(options);
@@ -128,7 +156,9 @@ public class SherlockPipeline {
 
 		Pipeline pipeline = Pipeline.create(options);
 
-		pipeline.apply(PubsubIO.Read.topic(options.getPubsubTopic())).apply(ParDo.of(new StringToRowConverter()))
+		pipeline.apply(PubsubIO.Read.topic(options.getPubsubTopic()))
+				.apply(ParDo.of(new JsonValuesCleaner()))
+				.apply(ParDo.of(new StringToRowConverter()))
 				.apply(Window.<TableRow>into(CalendarWindows.days(1)))
 				.apply(BigQueryIO.Write.withSchema(StringToRowConverter.getSchema())
 						.to(new SerializableFunction<BoundedWindow, String>() {

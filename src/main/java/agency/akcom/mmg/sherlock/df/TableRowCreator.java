@@ -49,7 +49,7 @@ public class TableRowCreator {
 				}
 			}
 			tableRow.set(schemaRow[0], getNextFieldValue(schemaIterator, schemaRow));
-			LOG.info(tableRow.toString());
+			//LOG.info(tableRow.toString());
 		}
 
 		return tableRow;
@@ -57,9 +57,9 @@ public class TableRowCreator {
 
 	private Object getNextFieldValue(Iterator<String[]> schemaIterator, String[] schemaRow) {
 		// LOG.info(String.join(",", schemaRow));
-		
+
 		if ("REPEATED".equals(schemaRow[2])) {
-			//TODO use stub for now since we only have one repeated "customDimensions"
+			// TODO use stub for now since we only have one repeated "customDimensions"
 			TableRow[] reapetedTableRows = createRepeated(schemaIterator, schemaRow);
 			LOG.info("REPEATED:" + schemaRow[0] + ": " + reapetedTableRows);
 			return reapetedTableRows;
@@ -76,9 +76,26 @@ public class TableRowCreator {
 				try {
 					value = elementJSON.get(key);
 				} catch (JSONException e) {
-					LOG.warn(e.getMessage());
+					LOG.info(e.getMessage());
 				}
 			}
+
+			// fix for:
+			// Insert failed:
+			// [{"errors":[{"debugInfo":"","location":"trackingid","message":"Array
+			// specified for non-repeated field.","reason":"invalid"}],"index":0}]
+			if ("trackingId".equals(schemaRow[0])) {
+				try {
+					value = elementJSON.getString(key);
+				} catch (JSONException e) {
+					LOG.warn(e.getMessage());
+					value = "";
+				}
+			}
+			// ---
+
+			//LOG.info(schemaRow[0] + ": " + value + " (" + key + ")");
+
 			return value;
 		}
 	}
