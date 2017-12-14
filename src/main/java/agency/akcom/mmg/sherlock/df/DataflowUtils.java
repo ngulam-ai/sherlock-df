@@ -115,22 +115,24 @@ public class DataflowUtils {
 				{"experiment.experimentId","STRING", "NULLABLE","xid",""}	,
 				{"experiment.experimentVariant","STRING", "NULLABLE","xvar",""}	,
 				
-				{"product","RECORD", "NULLABLE","",""}	,
+				{"product","RECORD", "NULLABLE","",""}	, //TODO make REPEATED for more then one Product
 				{"product.isImpression","BOOLEAN", "NULLABLE","",""}	,
 				{"product.impressionList","STRING", "NULLABLE","",""}	,
-				{"product.productBrand","STRING", "NULLABLE","",""}	,
-				{"product.productPrice","FLOAT", "NULLABLE","",""}	,
-				{"product.productQuantity","INTEGER", "NULLABLE","",""}	,
-				{"product.productSku","STRING", "NULLABLE","",""}	,
-				{"product.productVariant","STRING", "NULLABLE","",""}	,
-				{"product.productCategory","STRING", "NULLABLE","",""}	,
-				{"product.productName","STRING", "NULLABLE","",""}	,
-				{"product.position","INTEGER", "NULLABLE","",""}	,
-				{"product.coupon","STRING", "NULLABLE","",""}	,
-//				{"product.customDimensions","RECORD", "NULLABLE","",""}	,
+				{"product.productBrand","STRING", "NULLABLE","pr1br",""}	,
+				{"product.productPrice","FLOAT", "NULLABLE","pr1pr",""}	,
+				{"product.productQuantity","INTEGER", "NULLABLE","pr1qt",""}	,
+				{"product.productSku","STRING", "NULLABLE","pr1id",""}	,
+				{"product.productVariant","STRING", "NULLABLE","pr1va",""}	,
+				{"product.productCategory","STRING", "NULLABLE","pr1ca",""}	,
+				{"product.productName","STRING", "NULLABLE","pr1nm",""}	,
+				{"product.position","INTEGER", "NULLABLE","pr1ps",""}	,
+				{"product.coupon","STRING", "NULLABLE","pr1cc",""}	,
+				
+//				{"product.customDimensions","RECORD", "NULLABLE","",""}	, //pr1cd2
 //				{"product.customDimensions.index","INTEGER", "NULLABLE","",""}	,
 //				{"product.customDimensions.value","STRING", "NULLABLE","",""}	,
-//				{"product.customMetrics","RECORD", "NULLABLE","",""}	,
+				
+//				{"product.customMetrics","RECORD", "NULLABLE","",""}	, //pr1cm2
 //				{"product.customMetrics.index","INTEGER", "NULLABLE","",""}	,
 //				{"product.customMetrics.value","STRING", "NULLABLE","",""}	,
 				
@@ -143,12 +145,12 @@ public class DataflowUtils {
 				{"promotionActionInfo","STRING", "NULLABLE","promoa",""}	,
 				
 				{"transaction","RECORD", "NULLABLE","",""}	,
-				{"transaction.transactionId","STRING", "NULLABLE","",""}	,
-				{"transaction.transactionRevenue","FLOAT", "NULLABLE","",""}	,
-				{"transaction.transactionTax","FLOAT", "NULLABLE","",""}	,
-				{"transaction.transactionShipping","FLOAT", "NULLABLE","",""}	,
-				{"transaction.transactionCoupon","STRING", "NULLABLE","",""}	,
-				{"transaction.affiliation","STRING", "NULLABLE","",""}	,
+				{"transaction.transactionId","STRING", "NULLABLE","ti",""}	,
+				{"transaction.transactionRevenue","FLOAT", "NULLABLE","tr",""}	,
+				{"transaction.transactionTax","FLOAT", "NULLABLE","tt",""}	,
+				{"transaction.transactionShipping","FLOAT", "NULLABLE","ts",""}	,
+				{"transaction.transactionCoupon","STRING", "NULLABLE","tcc",""}	,
+				{"transaction.affiliation","STRING", "NULLABLE","ta",""}	,
 				
 				{"contentInfo","RECORD", "NULLABLE","",""}	,
 				{"contentInfo.contentDescription","STRING", "NULLABLE","",""}	,
