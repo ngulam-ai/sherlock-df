@@ -70,23 +70,29 @@ public class TableRowCreator {
 			return tmpTableRow;
 			
 		} else {
-			String key = schemaRow[3];
 			Object value = null;
-			if (!key.isEmpty()) {
-				try {
-					value = elementJSON.get(key);
-				} catch (JSONException e) {
-					LOG.info(e.getMessage());
-				}
-			}
+			
+			String[] keys = schemaRow[3].split(",");
+			// TOOD process more than One key separated by ','
+			for (int i = 0; i < keys.length; i++) {	
+				String key = keys[i].trim();
+				if (!key.isEmpty()) {
+					try {
+						value = elementJSON.get(key);
+						break; //try until first found						
+					} catch (JSONException e) {
+						LOG.info(e.getMessage());
+					}
+				}				
+			}			
 
-			// fix for:
+			// --- fix for:
 			// Insert failed:
 			// [{"errors":[{"debugInfo":"","location":"trackingid","message":"Array
 			// specified for non-repeated field.","reason":"invalid"}],"index":0}]
 			if ("trackingId".equals(schemaRow[0])) {
 				try {
-					value = elementJSON.getString(key);
+					value = elementJSON.getString(keys[0]);
 				} catch (JSONException e) {
 					LOG.warn(e.getMessage());
 					value = "";

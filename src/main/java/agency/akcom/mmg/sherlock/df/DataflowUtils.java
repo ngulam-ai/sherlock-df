@@ -59,14 +59,28 @@ public class DataflowUtils {
 				{"traffic.dclid","STRING", "NULLABLE","dclid",""}	,
 				
 				{"device","RECORD", "NULLABLE","",""}	,
-				{"device.ip","STRING", "NULLABLE","uip",""}	,
 				{"device.userAgent","STRING", "NULLABLE","ua",""}	,
-				{"device.flashVersion","STRING", "NULLABLE","fl","ga:flashVersion"}	,
-				{"device.javaEnabled","INTEGER", "NULLABLE", "","ga:javaEnabled"}	, // 'je' - TODO need to implement converting to boolean
-				{"device.language","STRING", "NULLABLE","ul","ga:language"}	,
-				{"device.screenColors","STRING", "NULLABLE","sd","ga:screenColors"}	,
-				{"device.screenResolution","STRING", "NULLABLE","sr","ga:screenResolution"}	,
-				
+				// If other not provided, we use __xxx which generated in /collect servlet which parse user agent for it	
+				{"device.ip","STRING", "NULLABLE","uip, __uip",""}	,
+				{"device.browserFamily","STRING", "NULLABLE","__bf",""}	,
+				{"device.browserVersion","STRING", "NULLABLE","__bv",""}	,
+				{"device.deviceFamily","STRING", "NULLABLE","__df",""}	,
+				{"device.deviceBrand","STRING", "NULLABLE","__db",""}	,
+				{"device.deviceModel","STRING", "NULLABLE","__dm",""}	,
+				{"device.deviceCategory","STRING", "NULLABLE","__dc",""}	,
+				{"device.osFamily","STRING", "NULLABLE","__of",""}	,
+				{"device.osVersion","STRING", "NULLABLE","__ov",""}	,
+				{"device.isTouchCapable","BOOLEAN", "NULLABLE","__istc",""}	,
+				{"device.isBot","BOOLEAN", "NULLABLE","__isb",""}	,
+				{"device.isEmailClient","BOOLEAN", "NULLABLE","__isec",""}	,
+				{"device.flashVersion","STRING", "NULLABLE","fl, __fl","ga:flashVersion"}	,
+				{"device.javaEnabled","INTEGER", "NULLABLE", "__je","ga:javaEnabled"}	, // 'je' - TODO need to implement converting to boolean
+				{"device.language","STRING", "NULLABLE","ul, __ul","ga:language"}	,
+				{"device.screenColors","STRING", "NULLABLE","sd, __sd","ga:screenColors"}	,
+				{"device.screenResolution","STRING", "NULLABLE","sr, __sr","ga:screenResolution"}	,
+				{"device.viewPort","STRING", "NULLABLE","__vp",""}	,
+				{"device.encoding","STRING", "NULLABLE","__enc",""}	,
+
 				{"geo","RECORD", "NULLABLE","",""}	,
 				{"geo.id","STRING", "NULLABLE","geoid",""}	,
 				
