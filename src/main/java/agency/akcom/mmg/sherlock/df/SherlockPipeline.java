@@ -2,6 +2,7 @@ package agency.akcom.mmg.sherlock.df;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -12,6 +13,10 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.blueconic.browscap.BrowsCapField;
+import com.blueconic.browscap.Capabilities;
+import com.blueconic.browscap.ParseException;
+import com.blueconic.browscap.UserAgentService;
 import com.google.api.services.bigquery.model.TableFieldSchema;
 import com.google.api.services.bigquery.model.TableRow;
 import com.google.api.services.bigquery.model.TableSchema;
@@ -51,34 +56,63 @@ public class SherlockPipeline {
 		
 		@Override
 		public void processElement(DoFn<String, String>.ProcessContext c) throws Exception {
+			
 			JSONObject elementJSON = new JSONObject(c.element());
 			
 			try {
-				String userAgent = elementJSON.getString("ua");
+				String userAgent = elementJSON.getString("ua");	
+				
+				if (userAgent != null && !userAgent.isEmpty()) {	
+					
+					UAParser.parseUserAgent(elementJSON, userAgent);
+					
+					parseUserAgent(elementJSON, userAgent);
+				} else {
+					LOG.error("Cann't find UserAget string ('ua')"); 
+				}			
+			} catch (JSONException e) {
+				LOG.error(e.getMessage());
+			}
 			
-				if (userAgent != null && !userAgent.isEmpty()) {
+			LOG.info("UAParser: " + elementJSON.toString());
 					
-					// Get an UserAgentStringParser and analyze the requesting client
-					UserAgentStringParser parser = UADetectorServiceFactory.getResourceModuleParser();
-					ReadableUserAgent agent = parser.parse(userAgent);
-					
-					elementJSON.put("__bf", agent.getName()); // browserFamily
-					elementJSON.put("__bv", agent.getVersionNumber().toVersionString()); // browserVersion
-					
-					elementJSON.put("__of", agent.getOperatingSystem().getName()); // osFamily
-					elementJSON.put("__ov", agent.getOperatingSystem().getVersionNumber().toVersionString()); // osVersion
-					
-					//elementJSON.put("__db", agent.getProducer()); // deviceBrand
-					//elementJSON.put("__dm", agent.getFamily().getName()); // deviceModel
-					elementJSON.put("__dc", agent.getDeviceCategory().getName()); // deviceCategory
-					
-					elementJSON.put("__isb", agent.getType().equals(UserAgentType.ROBOT)); // isBot
-					elementJSON.put("__isec",agent.getType().equals(UserAgentType.EMAIL_CLIENT)); // isEmailClient
-					
+			c.output(elementJSON.toString());
+		}
+
+		private void parseUserAgent(JSONObject elementJSON, String userAgent) throws IOException, ParseException {
+			// Get an UserAgentStringParser and analyze the requesting client
+			UserAgentStringParser parser = UADetectorServiceFactory.getResourceModuleParser();
+			ReadableUserAgent agent = parser.parse(userAgent);
+			
+			// or create a parser with a custom defined field list
+			// the list of available fields can be seen inthe BrowsCapField enum
+			final com.blueconic.browscap.UserAgentParser bcParser =
+			        new UserAgentService().loadParser(Arrays.asList(BrowsCapField.BROWSER, BrowsCapField.BROWSER_TYPE,
+			                BrowsCapField.BROWSER_MAJOR_VERSION,
+			                BrowsCapField.DEVICE_TYPE, BrowsCapField.PLATFORM, BrowsCapField.PLATFORM_VERSION,
+			                BrowsCapField.RENDERING_ENGINE_VERSION, BrowsCapField.RENDERING_ENGINE_NAME,
+			                BrowsCapField.PLATFORM_MAKER, BrowsCapField.RENDERING_ENGINE_MAKER));
+			
+			final Capabilities capabilities = bcParser.parse(userAgent);
+
+			
+			elementJSON.put("__bf", agent.getName()); // browserFamily
+			elementJSON.put("__bv", agent.getVersionNumber().toVersionString()); // browserVersion
+			
+			elementJSON.put("__of", agent.getOperatingSystem().getName()); // osFamily
+			elementJSON.put("__ov", agent.getOperatingSystem().getVersionNumber().toVersionString()); // osVersion
+			
+			//elementJSON.put("__db", agent.getProducer()); // deviceBrand
+			//elementJSON.put("__dm", agent.getFamily().getName()); // deviceModel
+			elementJSON.put("__dc", agent.getDeviceCategory().getName()); // deviceCategory
+			
+			elementJSON.put("__isb", agent.getType().equals(UserAgentType.ROBOT)); // isBot
+			elementJSON.put("__isec",agent.getType().equals(UserAgentType.EMAIL_CLIENT)); // isEmailClient
+			
 //					{"device.isBot","STRING", "NULLABLE","__isb",""}	,
 //					{"device.isEmailClient","STRING", "NULLABLE","__isec",""}	,
 
-					
+			
 //				       System.out.println("- - - - - - - - - - - - - - - - -");
 //				        // type
 //				        System.out.println("Browser type: " + agent.getType().getName());
@@ -105,7 +139,7 @@ public class SherlockPipeline {
 //				        // device category
 //				        ReadableDeviceCategory device = agent.getDeviceCategory();
 //				        System.out.println("\nDevice: " + device.getName());
-					
+			
 //					{"device.ip","STRING", "NULLABLE","uip, __uip",""}	,
 
 
@@ -123,18 +157,6 @@ public class SherlockPipeline {
 //					{"device.screenResolution","STRING", "NULLABLE","sr, __sr","ga:screenResolution"}	,
 //					{"device.viewPort","STRING", "NULLABLE","__vp",""}	,
 //					{"device.encoding","STRING", "NULLABLE","__enc",""}	,
-
-				} else {
-					LOG.error("Cann't find UserAget string ('ua')"); 
-				}
-			
-			} catch (JSONException e) {
-				LOG.error(e.getMessage());
-			}
-			
-			LOG.info("UserAgentParser: " + elementJSON.toString());
-					
-			c.output(elementJSON.toString());
 		}
 	}
 	
@@ -174,12 +196,8 @@ public class SherlockPipeline {
 
 		@Override
 		public void processElement(ProcessContext c) throws IOException {
-			// This document lists all of the parameters for the Measurement Protocol.
-			// https://developers.google.com/analytics/devguides/collection/protocol/v1/parameters
 			TableRow tableRow = new TableRowCreator(c.element()).getTableRow();
-
 			LOG.info(tableRow.toString());
-
 			c.output(tableRow);
 		}
 

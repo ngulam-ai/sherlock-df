@@ -81,5 +81,11 @@
 			<artifactId>uadetector-resources</artifactId>
 			<version>2014.10</version>
 		</dependency>
+	
+		<dependency>
+			<groupId>com.blueconic</groupId>
+			<artifactId>browscap-java</artifactId>
+			<version>1.2.0</version>
+		</dependency>
 	</dependencies>
 </project>
