@@ -66,7 +66,7 @@ public class SherlockPipeline {
 					
 					UAParser.parseUserAgent(elementJSON, userAgent);
 					
-					parseUserAgent(elementJSON, userAgent);
+					//parseUserAgent(elementJSON, userAgent);
 				} else {
 					LOG.error("Cann't find UserAget string ('ua')"); 
 				}			
@@ -78,7 +78,8 @@ public class SherlockPipeline {
 					
 			c.output(elementJSON.toString());
 		}
-
+		
+		@Deprecated
 		private void parseUserAgent(JSONObject elementJSON, String userAgent) throws IOException, ParseException {
 			// Get an UserAgentStringParser and analyze the requesting client
 			UserAgentStringParser parser = UADetectorServiceFactory.getResourceModuleParser();
