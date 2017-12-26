@@ -61,7 +61,7 @@ public class DataflowUtils {
 				{"device","RECORD", "NULLABLE","",""}	,
 				{"device.userAgent","STRING", "NULLABLE","ua",""}	,
 				// If other not provided, we use __xxx which generated in /collect servlet which parse user agent for it	
-				{"device.ip","STRING", "NULLABLE","uip, __uip",""}	,
+				{"device.ip","STRING", "NULLABLE","uip, __uip, cd48, cd49",""}	,
 				{"device.browserFamily","STRING", "NULLABLE","__bf",""}	,
 				{"device.browserVersion","STRING", "NULLABLE","__bv",""}	,
 				{"device.deviceFamily","STRING", "NULLABLE","__df",""}	,
@@ -118,6 +118,7 @@ public class DataflowUtils {
 				{"page.pagePath","STRING", "NULLABLE","dp",""}	,
 				{"page.hostname","STRING", "NULLABLE","dh",""}	,
 				{"page.pageTitle","STRING", "NULLABLE","dt",""}	,
+				{"page.location","STRING", "NULLABLE","dl",""},
 				
 				{"eCommerceAction","RECORD", "NULLABLE","",""}	,
 				{"eCommerceAction.action_type","STRING", "NULLABLE","pa",""}	,
@@ -186,18 +187,18 @@ public class DataflowUtils {
 				{"eventInfo.eventValue","STRING", "NULLABLE","ev",""}	,
 				
 				{"timingInfo","RECORD", "NULLABLE","",""}	,
-				{"timingInfo.timingCategory","STRING", "NULLABLE","",""}	,
-				{"timingInfo.timingVariable","STRING", "NULLABLE","",""}	,
-				{"timingInfo.timingLabel","STRING", "NULLABLE","",""}	,
-				{"timingInfo.timingValue","INTEGER", "NULLABLE","",""}	,
-				{"timingInfo.pageLoad","INTEGER", "NULLABLE","",""}	,
-				{"timingInfo.DNS","INTEGER", "NULLABLE","",""}	,
-				{"timingInfo.pageDownload","INTEGER", "NULLABLE","",""}	,
-				{"timingInfo.redirectResponse","INTEGER", "NULLABLE","",""}	,
-				{"timingInfo.TCPConnect","INTEGER", "NULLABLE","",""}	,
-				{"timingInfo.serverResponse","INTEGER", "NULLABLE","",""}	,
-				{"timingInfo.DOMInteractive","INTEGER", "NULLABLE","",""}	,
-				{"timingInfo.contentLoad","INTEGER", "NULLABLE","",""}	,
+				{"timingInfo.timingCategory","STRING", "NULLABLE","utc",""}	,
+				{"timingInfo.timingVariable","STRING", "NULLABLE","utv",""}	,
+				{"timingInfo.timingLabel","STRING", "NULLABLE","utl",""}	,
+				{"timingInfo.timingValue","INTEGER", "NULLABLE","utt",""}	,
+				{"timingInfo.pageLoad","INTEGER", "NULLABLE","plt",""}	,
+				{"timingInfo.DNS","INTEGER", "NULLABLE","dns",""}	,
+				{"timingInfo.pageDownload","INTEGER", "NULLABLE","pdt",""}	,
+				{"timingInfo.redirectResponse","INTEGER", "NULLABLE","rrt",""}	,
+				{"timingInfo.TCPConnect","INTEGER", "NULLABLE","tcp",""}	,
+				{"timingInfo.serverResponse","INTEGER", "NULLABLE","srt",""}	,
+				{"timingInfo.DOMInteractive","INTEGER", "NULLABLE","dit",""}	,
+				{"timingInfo.contentLoad","INTEGER", "NULLABLE","clt",""}	,
 });
 
 	private final DataflowPipelineOptions options;
@@ -225,7 +226,7 @@ public class DataflowUtils {
 			do {
 				try {
 					setupPubsub();
-					setupBigQueryTable();
+					//setupBigQueryTable();
 					return;
 				} catch (GoogleJsonResponseException e) {
 					lastException = e;
