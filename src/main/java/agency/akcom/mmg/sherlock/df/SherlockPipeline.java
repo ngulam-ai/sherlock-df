@@ -267,6 +267,9 @@ public class SherlockPipeline {
 		options.setWorkerMachineType("n1-standard-1");
 		options.setZone("europe-west3-a");
 		options.setNumWorkers(0);
+		// in order to update existing job with this name
+		options.setUpdate(true);
+		options.setJobName("sherlockpipeline-user-1222105147"); //see https://cloud.google.com/dataflow/pipelines/updating-a-pipeline
 
 		DataflowUtils dataflowUtils = new DataflowUtils(options);
 		dataflowUtils.setup();
