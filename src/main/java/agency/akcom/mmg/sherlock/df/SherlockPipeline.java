@@ -189,6 +189,43 @@ public class SherlockPipeline {
 			c.output(elementJSON.toString());
 		}
 	}
+	/**
+	 * Replace this generic label $$CUSTOM_PARAM(xxxxxxx)$$ (where xxxxx can by any value) with a null 
+	 */
+	static class JsonValuesReplaceToNull extends DoFn<String, String> {
+		@Override
+		public void processElement(DoFn<String, String>.ProcessContext c) throws Exception {
+			JSONObject elementJSON = new JSONObject(c.element());
+				
+			List<String> keysForReplace = new ArrayList<>();
+			for (String key : elementJSON.getJSONObject("customDimensions").keySet()) {
+				
+				String value = elementJSON.getString(key);
+				
+				if(value.contains("n/a") || value.contains("unknown") || value.contains("Unknown")) {
+					LOG.warn(String.format("Removing key='%s' value='%s'", key, value));
+					keysForReplace.add(key);
+				} else if ( (value.startsWith("${") || value.startsWith("{") ) && value.endsWith("}")) {
+					LOG.warn(String.format("Removing key='%s' value='%s'", key, value));
+					keysForReplace.add(key);
+				} else if ( value.startsWith("$$") && value.endsWith("$$")) {
+					LOG.warn(String.format("Removing key='%s' value='%s'", key, value));
+					keysForReplace.add(key);
+				} else if ( value.startsWith("@") && value.endsWith("@")) {
+					LOG.warn(String.format("Removing key='%s' value='%s'", key, value));
+					keysForReplace.add(key);
+				} 
+			
+			}
+			
+			for (String key : keysForReplace) {
+				String oldStr = elementJSON.getJSONObject("customDimensions").getString(key);
+				elementJSON.getJSONObject("customDimensions").getString(key).replace(oldStr, "null");				
+			}
+			
+			c.output(elementJSON.toString());
+		}
+	}
 	
 	/**
 	 * Converts strings into BigQuery rows.
@@ -281,6 +318,7 @@ public class SherlockPipeline {
 
 		pipeline.apply(PubsubIO.Read.topic(options.getPubsubTopic()))
 				.apply(ParDo.of(new JsonValuesCleaner()))
+				.apply(ParDo.of(new JsonValuesReplaceToNull()))
 				.apply(ParDo.of(new UserAgentParser()))
 				.apply(ParDo.of(new StringToRowConverter()))
 				.apply(Window.<TableRow>into(CalendarWindows.days(1)))
