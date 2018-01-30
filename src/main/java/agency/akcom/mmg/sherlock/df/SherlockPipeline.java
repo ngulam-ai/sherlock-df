@@ -200,7 +200,7 @@ public class SherlockPipeline {
 			List<String> keysForReplace = new ArrayList<>();
 			for (String key : elementJSON.getJSONObject("customDimensions").keySet()) {
 				
-				String value = elementJSON.getString(key);
+				String value = elementJSON.getJSONObject("customDimensions").getString(key);
 				
 				if(value.contains("n/a") || value.contains("unknown") || value.contains("Unknown")) {
 					LOG.warn(String.format("Removing key='%s' value='%s'", key, value));
@@ -220,7 +220,7 @@ public class SherlockPipeline {
 			
 			for (String key : keysForReplace) {
 				String oldStr = elementJSON.getJSONObject("customDimensions").getString(key);
-				elementJSON.getJSONObject("customDimensions").getString(key).replace(oldStr, "null");				
+				elementJSON.getJSONObject("customDimensions").getString(key).replace(oldStr, null);				
 			}
 			
 			c.output(elementJSON.toString());
