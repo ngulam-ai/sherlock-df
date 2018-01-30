@@ -202,20 +202,16 @@ public class SherlockPipeline {
 				
 				String value = elementJSON.getJSONObject("customDimensions").getString(key);
 				
-				if(value.contains("n/a") || value.contains("unknown") || value.contains("Unknown")) {
-					LOG.warn(String.format("Removing key='%s' value='%s'", key, value));
-					keysForReplace.add(key);
-				} else if ( (value.startsWith("${") || value.startsWith("{") ) && value.endsWith("}")) {
-					LOG.warn(String.format("Removing key='%s' value='%s'", key, value));
-					keysForReplace.add(key);
-				} else if ( value.startsWith("$$") && value.endsWith("$$")) {
-					LOG.warn(String.format("Removing key='%s' value='%s'", key, value));
-					keysForReplace.add(key);
-				} else if ( value.startsWith("@") && value.endsWith("@")) {
+				if( (value.contains("n/a"))
+						|| (value.contains("unknown"))
+						|| (value.contains("Unknown"))
+						|| ((value.startsWith("${") || value.startsWith("{")) && value.endsWith("}"))
+						|| (value.startsWith("$$") && value.endsWith("$$"))
+						|| (value.startsWith("@") && value.endsWith("@"))
+						) {
 					LOG.warn(String.format("Removing key='%s' value='%s'", key, value));
 					keysForReplace.add(key);
 				} 
-			
 			}
 			
 			for (String key : keysForReplace) {
