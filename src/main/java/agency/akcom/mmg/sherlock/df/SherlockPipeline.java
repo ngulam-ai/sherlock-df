@@ -190,14 +190,15 @@ public class SherlockPipeline {
 		}
 	}
 	/**
-	 * Replace this generic label $$CUSTOM_PARAM(xxxxxxx)$$ (where xxxxx can by any value) with a null 
+	 * Replace value: "$$xxx$$", "${xxx}", "@xxx@", "{xxx}", "n/a" - any height of letters, "unknown" - any height of letters;
+	 * by null. If value contains only one from the above parameters - value will be replace by "JSONObject.NULL"
+	 * else value contains inside more parameters - will be replace by string "null".
 	 */
 	static class JsonValuesReplaceToNull extends DoFn<String, String> {
 		@Override
 		public void processElement(DoFn<String, String>.ProcessContext c) throws Exception {
 			JSONObject elementJSON = new JSONObject(c.element());
 				
-			List<String> keysForReplace = new ArrayList<>();
 			for (String key : elementJSON.getJSONObject("customDimensions").keySet()) {
 				
 				String value = elementJSON.getJSONObject("customDimensions").getString(key);
@@ -209,15 +210,19 @@ public class SherlockPipeline {
 						|| (value.startsWith("$$") && value.endsWith("$$"))
 						|| (value.startsWith("@") && value.endsWith("@"))
 						) {
-					LOG.warn(String.format("Removing key='%s' value='%s'", key, value));
-					keysForReplace.add(key);
+					LOG.warn(String.format("Replace key='%s' value='%s' by null", key, value));
+					elementJSON.getJSONObject("customDimensions").put(key, JSONObject.NULL);
+					continue;
 				} 
-			}
-			
-			for (String key : keysForReplace) {
-				String oldStr = elementJSON.getJSONObject("customDimensions").getString(key);
-				elementJSON.getJSONObject("customDimensions").getString(key).replace(oldStr, null);				
-			}
+				elementJSON.getJSONObject("customDimensions")
+					.put(key, value.replaceAll("(?i)n/a", "null")
+						.replaceAll("(?i)unknown", "null")
+						.replaceAll("\\$\\$.+?\\$\\$", "null")	//$$xxx$$
+						.replaceAll("\\$\\{.+?\\}", "null")		//${xxx}
+						.replaceAll("\\{.+?\\}", "null")		//{xxx}
+						.replaceAll("@.+?@", "null")			//@xxx@
+					);	
+				}
 			
 			c.output(elementJSON.toString());
 		}
