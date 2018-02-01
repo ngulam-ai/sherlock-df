@@ -203,9 +203,8 @@ public class SherlockPipeline {
 				
 				String value = elementJSON.getJSONObject("customDimensions").getString(key);
 				
-				if( (value.contains("n/a"))
-						|| (value.contains("unknown"))
-						|| (value.contains("Unknown"))
+				if( (value.equalsIgnoreCase("n/a"))
+						|| (value.equalsIgnoreCase("unknown"))
 						|| ((value.startsWith("${") || value.startsWith("{")) && value.endsWith("}"))
 						|| (value.startsWith("$$") && value.endsWith("$$"))
 						|| (value.startsWith("@") && value.endsWith("@"))
@@ -213,7 +212,7 @@ public class SherlockPipeline {
 					LOG.warn(String.format("Replace key='%s' value='%s' by null", key, value));
 					elementJSON.getJSONObject("customDimensions").put(key, JSONObject.NULL);
 					continue;
-				} 
+				}
 				elementJSON.getJSONObject("customDimensions")
 					.put(key, value.replaceAll("(?i)n/a", "null")
 						.replaceAll("(?i)unknown", "null")
