@@ -172,10 +172,16 @@ public class SherlockPipeline {
 		public void processElement(DoFn<String, String>.ProcessContext c) throws Exception {
 			JSONObject elementJSON = new JSONObject(c.element());
 				
-			for (String key : elementJSON.getJSONObject("customDimensions").keySet()) {
+			for (String key : elementJSON.keySet()) {
 				
-				String value = elementJSON.getJSONObject("customDimensions").getString(key);
+				String value = "";
 				
+				try {
+					value = elementJSON.getString(key);
+				} catch (JSONException e) {
+					continue;
+				}
+						
 				if( (value.equalsIgnoreCase("n/a"))
 						|| (value.equalsIgnoreCase("unknown"))
 						|| ((value.startsWith("${") || value.startsWith("{")) && value.endsWith("}"))
@@ -184,12 +190,10 @@ public class SherlockPipeline {
 						|| (value.startsWith("$$CUSTOM_PARAM("))
 						) {
 					LOG.warn(String.format("Replace key='%s' value='%s' by null", key, value));
-					elementJSON.getJSONObject("customDimensions").put(key, JSONObject.NULL);
+					elementJSON.put(key, JSONObject.NULL);
 					continue;
 				}
-				elementJSON.getJSONObject("customDimensions")
-					.put(key, value.replaceAll("(?i)n/a", "null")
-						.replaceAll("(?i)unknown", "null")
+				elementJSON.put(key, value.replaceAll("(?i)n/a", "null").replaceAll("(?i)unknown", "null")
 						.replaceAll("\\$\\$.+?\\$\\$", "null")	//$$xxx$$
 						.replaceAll("\\$\\{.+?\\}", "null")		//${xxx}
 						.replaceAll("\\{.+?\\}", "null")		//{xxx}
