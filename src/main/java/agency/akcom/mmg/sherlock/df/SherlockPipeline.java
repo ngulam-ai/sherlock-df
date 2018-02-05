@@ -162,30 +162,41 @@ public class SherlockPipeline {
 	}
 	
 	/**
-	 * Replace this generic label $$CUSTOM_PARAM(xxxxxxx)$$ (where xxxxx can by any value) with a null 
+	 * Replace value: "$$xxx$$", "${xxx}", "@xxx@", "{xxx}", "n/a" - any size of letters, "unknown" - any size of letters;
+	 * by null and replace this generic label $$CUSTOM_PARAM(xxxxxxx)$$ (where xxxxx can by any value) with a null.
+	 * If value equals one from the above parameters - value will be replaced by "JSONObject.NULL"
+	 * else value contains inside more parameters - will be replaced by string "null".
 	 */
-	static class JsonValuesCleaner extends DoFn<String, String> {
+	static class JsonValuesReplaceToNull extends DoFn<String, String> {
 		@Override
 		public void processElement(DoFn<String, String>.ProcessContext c) throws Exception {
 			JSONObject elementJSON = new JSONObject(c.element());
-			
-			
-
-			List<String> keysToDelete = new ArrayList<>();
-			for (String key : elementJSON.keySet()) {
-				String value = elementJSON.getString(key);
-				if (value.startsWith("$$CUSTOM_PARAM(")) { // TODO improve matching
-
-					LOG.warn(String.format("Removing key='%s' value='%s'", key, value));
-
-					keysToDelete.add(key);
+				
+			for (String key : elementJSON.getJSONObject("customDimensions").keySet()) {
+				
+				String value = elementJSON.getJSONObject("customDimensions").getString(key);
+				
+				if( (value.equalsIgnoreCase("n/a"))
+						|| (value.equalsIgnoreCase("unknown"))
+						|| ((value.startsWith("${") || value.startsWith("{")) && value.endsWith("}"))
+						|| (value.startsWith("$$") && value.endsWith("$$"))
+						|| (value.startsWith("@") && value.endsWith("@"))
+						|| (value.startsWith("$$CUSTOM_PARAM("))
+						) {
+					LOG.warn(String.format("Replace key='%s' value='%s' by null", key, value));
+					elementJSON.getJSONObject("customDimensions").put(key, JSONObject.NULL);
+					continue;
 				}
-			}
-
-			for (String key : keysToDelete) {
-				elementJSON.remove(key);
-			}
-
+				elementJSON.getJSONObject("customDimensions")
+					.put(key, value.replaceAll("(?i)n/a", "null")
+						.replaceAll("(?i)unknown", "null")
+						.replaceAll("\\$\\$.+?\\$\\$", "null")	//$$xxx$$
+						.replaceAll("\\$\\{.+?\\}", "null")		//${xxx}
+						.replaceAll("\\{.+?\\}", "null")		//{xxx}
+						.replaceAll("@.+?@", "null")			//@xxx@
+					);	
+				}
+			
 			c.output(elementJSON.toString());
 		}
 	}
@@ -280,7 +291,7 @@ public class SherlockPipeline {
 		Pipeline pipeline = Pipeline.create(options);
 
 		pipeline.apply(PubsubIO.Read.topic(options.getPubsubTopic()))
-				.apply(ParDo.of(new JsonValuesCleaner()))
+				.apply(ParDo.of(new JsonValuesReplaceToNull()))
 				.apply(ParDo.of(new UserAgentParser()))
 				.apply(ParDo.of(new StringToRowConverter()))
 				.apply(Window.<TableRow>into(CalendarWindows.days(1)))
