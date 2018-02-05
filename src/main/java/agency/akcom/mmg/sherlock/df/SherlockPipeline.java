@@ -189,8 +189,8 @@ public class SherlockPipeline {
 						|| (value.startsWith("@") && value.endsWith("@"))
 						|| (value.startsWith("$$CUSTOM_PARAM("))
 						) {
-					LOG.warn(String.format("Replace key='%s' value='%s' by null", key, value));
-					elementJSON.put(key, JSONObject.NULL);
+					LOG.warn(String.format("Remove key='%s' value='%s'", key, value));
+	                elementJSON.remove(key);
 					continue;
 				}
 				elementJSON.put(key, value.replaceAll("(?i)n/a", "null").replaceAll("(?i)unknown", "null")
