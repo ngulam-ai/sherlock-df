@@ -171,7 +171,8 @@ public class SherlockPipeline {
 		@Override
 		public void processElement(DoFn<String, String>.ProcessContext c) throws Exception {
 			JSONObject elementJSON = new JSONObject(c.element());
-				
+            List<String> keysToDelete = new ArrayList<>();
+	
 			for (String key : elementJSON.keySet()) {
 				
 				String value = "";
@@ -190,7 +191,7 @@ public class SherlockPipeline {
 						|| (value.startsWith("$$CUSTOM_PARAM("))
 						) {
 					LOG.warn(String.format("Remove key='%s' value='%s'", key, value));
-	                elementJSON.remove(key);
+                    keysToDelete.add(key);
 					continue;
 				}
 				elementJSON.put(key, value.replaceAll("(?i)n/a", "null").replaceAll("(?i)unknown", "null")
@@ -199,7 +200,11 @@ public class SherlockPipeline {
 						.replaceAll("\\{.+?\\}", "null")		//{xxx}
 						.replaceAll("@.+?@", "null")			//@xxx@
 					);	
-				}
+			}
+			
+            for (String key : keysToDelete) {
+                elementJSON.remove(key);
+            }
 			
 			c.output(elementJSON.toString());
 		}
