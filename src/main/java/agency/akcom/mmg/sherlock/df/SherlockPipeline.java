@@ -289,7 +289,7 @@ public class SherlockPipeline {
 		options.setNumWorkers(0);
 		// in order to update existing job with this name
 		options.setUpdate(true);
-		options.setJobName("sherlockpipeline-user-1222105147"); //see https://cloud.google.com/dataflow/pipelines/updating-a-pipeline
+		options.setJobName("sherlockpipeline-user-0205130715"); //see https://cloud.google.com/dataflow/pipelines/updating-a-pipeline
 
 		DataflowUtils dataflowUtils = new DataflowUtils(options);
 		dataflowUtils.setup();
