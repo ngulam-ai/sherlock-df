@@ -18,43 +18,11 @@ import agency.akcom.mmg.sherlock.df.SherlockPipeline.JsonValuesReplaceToNull;
 @RunWith(JUnit4.class)
 public class JsonValuesReplaceToNullTest {
 	
-	static final JSONObject JSONINPUT = new JSONObject();
-	static final JSONObject JSONOUTPUT = new JSONObject();
+	static final String STRIN = "{\"date\":\"20180205\",\"__dm\":\"Unknown\",\"__bf\":\"Asynchronous HTTP Client\",\"pr1qt\":\"1\",\"ua\":\"AHC/2.0\",\"tid\":\"UA-98835143-2\",\"uid\":\";;;unknown;unknown;unknown;unknown;;;$$CUSTOM_PARAM(cd11)$$;{sha1_did};{ifa}\",\"pr1ca\":\"Gaming\",\"pr1id\":\"329\",\"hour\":\"02\",\"__bv\":\"0.0\",\"__uip\":\"212.124.119.131\",\"__of\":\"Unknown\",\"ea\":\"Conversion\",\"ec\":\"Conversion\",\"pr1br\":\"Mobidea\",\"hitId\":\"71ef2646-ce0e-46b1-b168-b4093c560da7\",\"cm\":\"Pop\",\"cn\":\"Avazu MDSP|IT | Rome Milan Unknown | TIM WIND Vodafone | Phone:Alcatel Samsung Generic | Android:6.0 7.0 | Chrome Mobile\",\"__ov\":\"Unknown\",\"ta\":\"Mobidea\",\"pr1pr\":\"1.75\",\"minute\":\"27\",\"pr1nm\":\"17228 - Games - IT - 3G - Playoo Angry Fish\",\"cs\":\"Avazu MDSP\",\"pa\":\"purchase\",\"__istc\":false,\"__db\":\"Unknown\",\"__dc\":\"Unknown\",\"t\":\"event\",\"ti\":\"pumies75dfj7\",\"v\":\"1\",\"time\":\"1517794059508\",\"tr\":\"1.75\",\"__isb\":true}";
+	static final JSONObject JSONINPUT = new JSONObject(STRIN);
+	static final String STROUT = "{\"date\":\"20180205\",\"__bf\":\"Asynchronous HTTP Client\",\"pr1qt\":\"1\",\"ua\":\"AHC/2.0\",\"tid\":\"UA-98835143-2\",\"uid\":\";;;null;null;null;null;;;null;null;null\",\"pr1ca\":\"Gaming\",\"pr1id\":\"329\",\"hour\":\"02\",\"__bv\":\"0.0\",\"__uip\":\"212.124.119.131\",\"ea\":\"Conversion\",\"ec\":\"Conversion\",\"pr1br\":\"Mobidea\",\"hitId\":\"71ef2646-ce0e-46b1-b168-b4093c560da7\",\"cm\":\"Pop\",\"cn\":\"Avazu MDSP|IT | Rome Milan null | TIM WIND Vodafone | Phone:Alcatel Samsung Generic | Android:6.0 7.0 | Chrome Mobile\",\"ta\":\"Mobidea\",\"pr1pr\":\"1.75\",\"minute\":\"27\",\"pr1nm\":\"17228 - Games - IT - 3G - Playoo Angry Fish\",\"cs\":\"Avazu MDSP\",\"pa\":\"purchase\",\"__istc\":false,\"t\":\"event\",\"ti\":\"pumies75dfj7\",\"v\":\"1\",\"time\":\"1517794059508\",\"tr\":\"1.75\",\"__isb\":true}";
+	static final JSONObject JSONOUTPUT = new JSONObject(STROUT);
 	
-	static {
-		JSONObject geoJSON = new JSONObject();	
-		geoJSON.put("id", "");
-		geoJSON.put("name", "testName");
-		JSONINPUT.put("geo", geoJSON);
-		JSONOUTPUT.put("geo", geoJSON);
-		JSONObject customDimensionsJSONINPUT = new JSONObject();
-		customDimensionsJSONINPUT.put("1", "n/a");
-		customDimensionsJSONINPUT.put("2", "Unknown");
-		customDimensionsJSONINPUT.put("3", "unknown");
-		customDimensionsJSONINPUT.put("4", "$$test_test$$");
-		customDimensionsJSONINPUT.put("5", "${test_test}");
-		customDimensionsJSONINPUT.put("6", "@test_test@");
-		customDimensionsJSONINPUT.put("7", "{test_test}");
-		customDimensionsJSONINPUT.put("70", "Japan;Fukuoka;Kitakyushu;unknown;unknown;Android;6.0;Mozilla/5.0 (Linux; Android 6.0; FlareA1 Build/MRA58K; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/51.0.2704.81 Mobile Safari/537.36;111.239.125.249;$$CUSTOM_PARAM(cd11)$$;$$CUSTOM_PARAM(cd7)$$;$$CUSTOM_PARAM(cd10)$$");
-		customDimensionsJSONINPUT.put("82", "http://vfcyd.tjnet.es/cig/campaign/prelandingmm.php?actionID=MTYjMiMzIzQwNnwxMDR8RVN8M3w1fHxZV04wYVc5dVgwbEUqTkRNd09ERTJNak0zTXpneXxmOHExODU5YWEwcDR8ZGFjNWU3YTAtZmRmNC0xMWU3LTg2NjYtZDQ4NTY0YzYyZjQ0fHxjb20uZ2VuZXJhbW9iaWxlLmxvZ29tYW5pYQ&clickid=$$CUSTOM_PARAM(click_ID)$$&PublisherName=Propellerads&PlacementName=Prelanding&utm_source=Propellerads&utm_campagin=Prelanding");
-		customDimensionsJSONINPUT.put("94", "unknown;n/a;$$test_test$$;${test_test};{test_test};Unknown;${test_test};{test_test};$$test_test$$;${test_test}");
-		JSONINPUT.put("customDimensions", customDimensionsJSONINPUT);
-		JSONObject customGroupsJSON = new JSONObject();
-		JSONINPUT.put("customGroups", customGroupsJSON);
-		JSONObject customDimensionsJSONOUTPUT = new JSONObject();
-		customDimensionsJSONOUTPUT.put("1", JSONObject.NULL);
-		customDimensionsJSONOUTPUT.put("2", JSONObject.NULL);
-		customDimensionsJSONOUTPUT.put("3", JSONObject.NULL);
-		customDimensionsJSONOUTPUT.put("4", JSONObject.NULL);
-		customDimensionsJSONOUTPUT.put("5", JSONObject.NULL);
-		customDimensionsJSONOUTPUT.put("6", JSONObject.NULL);
-		customDimensionsJSONOUTPUT.put("7", JSONObject.NULL);
-		customDimensionsJSONOUTPUT.put("70", "Japan;Fukuoka;Kitakyushu;null;null;Android;6.0;Mozilla/5.0 (Linux; Android 6.0; FlareA1 Build/MRA58K; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/51.0.2704.81 Mobile Safari/537.36;111.239.125.249;null;null;null");
-		customDimensionsJSONOUTPUT.put("82", "http://vfcyd.tjnet.es/cig/campaign/prelandingmm.php?actionID=MTYjMiMzIzQwNnwxMDR8RVN8M3w1fHxZV04wYVc5dVgwbEUqTkRNd09ERTJNak0zTXpneXxmOHExODU5YWEwcDR8ZGFjNWU3YTAtZmRmNC0xMWU3LTg2NjYtZDQ4NTY0YzYyZjQ0fHxjb20uZ2VuZXJhbW9iaWxlLmxvZ29tYW5pYQ&clickid=null&PublisherName=Propellerads&PlacementName=Prelanding&utm_source=Propellerads&utm_campagin=Prelanding");
-		customDimensionsJSONOUTPUT.put("94", "null;null;null;null;null;null;null;null;null;null");
-		JSONOUTPUT.put("customDimensions", customDimensionsJSONOUTPUT);
-		JSONOUTPUT.put("customGroups", customGroupsJSON);
-	}	
 			
 	@Test
 	public void testJsonReplaceToNull() {

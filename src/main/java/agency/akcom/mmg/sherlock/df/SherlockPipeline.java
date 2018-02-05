@@ -171,11 +171,18 @@ public class SherlockPipeline {
 		@Override
 		public void processElement(DoFn<String, String>.ProcessContext c) throws Exception {
 			JSONObject elementJSON = new JSONObject(c.element());
+            List<String> keysToDelete = new ArrayList<>();
+	
+			for (String key : elementJSON.keySet()) {
 				
-			for (String key : elementJSON.getJSONObject("customDimensions").keySet()) {
+				String value = "";
 				
-				String value = elementJSON.getJSONObject("customDimensions").getString(key);
-				
+				try {
+					value = elementJSON.getString(key);
+				} catch (JSONException e) {
+					continue;
+				}
+						
 				if( (value.equalsIgnoreCase("n/a"))
 						|| (value.equalsIgnoreCase("unknown"))
 						|| ((value.startsWith("${") || value.startsWith("{")) && value.endsWith("}"))
@@ -183,19 +190,21 @@ public class SherlockPipeline {
 						|| (value.startsWith("@") && value.endsWith("@"))
 						|| (value.startsWith("$$CUSTOM_PARAM("))
 						) {
-					LOG.warn(String.format("Replace key='%s' value='%s' by null", key, value));
-					elementJSON.getJSONObject("customDimensions").put(key, JSONObject.NULL);
+					LOG.warn(String.format("Remove key='%s' value='%s'", key, value));
+                    keysToDelete.add(key);
 					continue;
 				}
-				elementJSON.getJSONObject("customDimensions")
-					.put(key, value.replaceAll("(?i)n/a", "null")
-						.replaceAll("(?i)unknown", "null")
+				elementJSON.put(key, value.replaceAll("(?i)n/a", "null").replaceAll("(?i)unknown", "null")
 						.replaceAll("\\$\\$.+?\\$\\$", "null")	//$$xxx$$
 						.replaceAll("\\$\\{.+?\\}", "null")		//${xxx}
 						.replaceAll("\\{.+?\\}", "null")		//{xxx}
 						.replaceAll("@.+?@", "null")			//@xxx@
 					);	
-				}
+			}
+			
+            for (String key : keysToDelete) {
+                elementJSON.remove(key);
+            }
 			
 			c.output(elementJSON.toString());
 		}
@@ -280,7 +289,7 @@ public class SherlockPipeline {
 		options.setNumWorkers(0);
 		// in order to update existing job with this name
 		options.setUpdate(true);
-		options.setJobName("sherlockpipeline-user-1222105147"); //see https://cloud.google.com/dataflow/pipelines/updating-a-pipeline
+		options.setJobName("sherlockpipeline-user-0205130715"); //see https://cloud.google.com/dataflow/pipelines/updating-a-pipeline
 
 		DataflowUtils dataflowUtils = new DataflowUtils(options);
 		dataflowUtils.setup();
