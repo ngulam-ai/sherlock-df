@@ -74,7 +74,7 @@ public class SherlockPipeline {
 				LOG.error(e.getMessage());
 			}
 			
-			LOG.info("UAParser: " + elementJSON.toString());
+			LOG.debug("UAParser: " + elementJSON.toString());
 					
 			c.output(elementJSON.toString());
 		}
@@ -190,7 +190,7 @@ public class SherlockPipeline {
 						|| (value.startsWith("@") && value.endsWith("@"))
 						|| (value.startsWith("$$CUSTOM_PARAM("))
 						) {
-					LOG.warn(String.format("Remove key='%s' value='%s'", key, value));
+					LOG.debug(String.format("Remove key='%s' value='%s'", key, value));
                     keysToDelete.add(key);
 					continue;
 				}
@@ -218,7 +218,7 @@ public class SherlockPipeline {
 		@Override
 		public void processElement(ProcessContext c) throws IOException {
 			TableRow tableRow = new TableRowCreator(c.element()).getTableRow();
-			LOG.info(tableRow.toString());
+			LOG.debug(tableRow.toString());
 			c.output(tableRow);
 		}
 

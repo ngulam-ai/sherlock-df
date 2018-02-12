@@ -54,7 +54,7 @@ public class UAParser {
 //				{"device.viewPort","STRING", "NULLABLE","__vp",""}	,
 //				{"device.encoding","STRING", "NULLABLE","__enc",""}	,
 		
-		LOG.info("UAParser.parseUserAgent(): " + elementJSON.toString());
+		LOG.debug("UAParser.parseUserAgent(): " + elementJSON.toString());
 	}
 
 
