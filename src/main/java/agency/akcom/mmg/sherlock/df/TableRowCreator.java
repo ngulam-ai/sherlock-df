@@ -61,12 +61,12 @@ public class TableRowCreator {
 		if ("REPEATED".equals(schemaRow[2])) {
 			// TODO use stub for now since we only have one repeated "customDimensions"
 			TableRow[] reapetedTableRows = createRepeated(schemaIterator, schemaRow);
-			LOG.info("REPEATED:" + schemaRow[0] + ": " + reapetedTableRows);
+			LOG.debug("REPEATED:" + schemaRow[0] + ": " + reapetedTableRows);
 			return reapetedTableRows;
 			
 		} else if ("RECORD".equals(schemaRow[1])) {
 			TableRow tmpTableRow = setFields(schemaIterator, schemaRow[0], new TableRow());
-			LOG.info("RECORD:" + schemaRow[0] + ": " + tmpTableRow.toString());
+			LOG.debug("RECORD:" + schemaRow[0] + ": " + tmpTableRow.toString());
 			return tmpTableRow;
 			
 		} else {
